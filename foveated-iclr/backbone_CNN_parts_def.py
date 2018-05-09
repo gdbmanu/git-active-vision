@@ -1,11 +1,12 @@
+import numpy as np
+from waveimage import WaveImage, calc_dim, calc_U, mnist_reshape_32
+import tensorflow as tf
+
 class Obj:
     pass
 
 params = Obj()
 params.batch_size = 100
-
-batch = mnist.train.next_batch(params.batch_size)
-wave_tensor = wave_tensor_data(batch[0])
 
 DEPTH_WAV = 3
 
@@ -55,7 +56,7 @@ batch_phase = tf.placeholder(tf.bool, name='bn_phase')
 
 l1_loss = tf.constant(0.0)
 
-# Paramètres 5 --> 4
+# Parametres 5 --> 4
 W_conv_54 = weight_variable([WIDTH, WIDTH, DEPTH_WAV, DEPTH_4], \
                             stddev = STD / (WIDTH * WIDTH * DEPTH_WAV), \
                             name = "W_conv_54")
@@ -64,7 +65,7 @@ h_conv_4 = tf.nn.conv2d(x_5, W_conv_54, strides=[1, 2, 2, 1], padding='VALID', n
 z_conv_4 = tf.nn.relu(h_conv_4)
 cat_conv_4 = tf.concat((z_conv_4, x_4), axis = 3)
 
-# Paramètres 4 --> 3
+# Parametres 4 --> 3
 W_conv_43 = weight_variable([WIDTH, WIDTH, DEPTH_4 + DEPTH_WAV, DEPTH_3],\
                             stddev = STD / (WIDTH * WIDTH * (DEPTH_4 + DEPTH_WAV)), \
                             name = "W_conv_43")
@@ -74,7 +75,7 @@ h_conv_3 = tf.nn.conv2d(cat_conv_4, W_conv_43, strides=[1, 2, 2, 1], padding='VA
 z_conv_3 = tf.nn.relu(h_conv_3)
 cat_conv_3 = tf.concat((z_conv_3, x_3), axis = 3)
 
-# Paramètres 3 --> 2
+# Parametres 3 --> 2
 W_conv_32 = weight_variable([WIDTH, WIDTH, DEPTH_3 + DEPTH_WAV, DEPTH_2],\
                             stddev = STD / (WIDTH * WIDTH * (DEPTH_3 + DEPTH_WAV)), \
                             name = "W_conv_32")
@@ -84,7 +85,7 @@ h_conv_2 = tf.nn.conv2d(cat_conv_3, W_conv_32, strides=[1, 2, 2, 1], padding='VA
 z_conv_2 = tf.nn.relu(h_conv_2)
 cat_conv_2 = tf.concat((z_conv_2, x_2), axis = 3)
 
-# Paramètres 2 --> 1
+# Parametres 2 --> 1
 W_conv_21 = weight_variable([WIDTH, WIDTH, DEPTH_2 + DEPTH_WAV, DEPTH_1],\
                             stddev = STD / (WIDTH * WIDTH * (DEPTH_2 + DEPTH_WAV)), \
                             name = "W_conv_21")
