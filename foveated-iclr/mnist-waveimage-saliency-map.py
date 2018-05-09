@@ -59,7 +59,7 @@ from waveimage import calc_U
 # In[12]:
 
 
-file_name = "mnist-waveimage-train-mu-Sigma-rho-naive.pkl"
+file_name = "mnist-waveimage-train-mu-Sigma-rho.pkl"
 if not os.path.isfile(file_name):
     
     B_train = []
@@ -69,15 +69,6 @@ if not os.path.isfile(file_name):
             sys.stdout.flush()
         c = mnist.train.labels[i]
         x_ref = mnist.train.images[i]
-        '''m_x = np.mean(x_ref)
-        #print test
-        x_noise = x_ref * (1 - 0.3)  + (0.3) * (1 - x_ref)
-        x_noise = x_noise * np.random.rand(28 * 28) * np.random.binomial(1, x_noise)'''
-        '''x_noise = np.copy(x_ref)
-        for _ in range(100):
-            i_1 = np.where(np.random.multinomial(1, np.ones(784)/784) == 1)[0][0]
-            i_2 = np.where(np.random.multinomial(1, np.ones(784)/784) == 1)[0][0]
-            x_noise[i_1], x_noise[i_2] = x_noise[i_2], x_noise[i_1]'''
         image = mnist_reshape_32(x_ref)
         w = WaveImage(image = image)
         data = w.get_data()
@@ -120,7 +111,7 @@ if not os.path.isfile(file_name):
                     data = []
                     cpt = 0
                     for v in Data_train[c][h][u]:
-                        if False : #!!!!! Naive model #np.linalg.norm(v) < 1e-16:
+                        if np.linalg.norm(v) < 1e-16:
                             cpt += 1
                         else:
                             data += [v]

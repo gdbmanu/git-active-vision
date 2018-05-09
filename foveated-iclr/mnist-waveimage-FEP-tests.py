@@ -59,7 +59,7 @@ from waveimage import calc_U
 # In[10]:
 
 
-DECODER = 'base'
+DECODER = 'naive-test'
 #DECODER = 'base' 
 if DECODER == 'base':
     mu, Sigma, rho = pickle.load(open("mnist-waveimage-train-mu-Sigma-rho.pkl", "rb"))
@@ -73,8 +73,8 @@ elif DECODER == 'naive-test':
 # In[11]:
 
 
-#ENCODER = 'base'
-ENCODER = 'backbone-CNN-parts' 
+ENCODER = 'base'
+#ENCODER = 'backbone-CNN-parts' 
 if ENCODER == 'backbone-CNN-parts':
     from backbone_CNN_parts_def import *
     sess = tf.InteractiveSession()
@@ -902,7 +902,7 @@ from record import Record, affiche_records
 # In[45]:
 
 
-NB_TRIALS = 1
+NB_TRIALS = 10000
 
 
 # In[46]:
@@ -951,7 +951,7 @@ liste_pol  = (            'smooth-predictive-Info-Gain', 'smooth-predictive-Info
             'sharp-predictive-Innovation', 'sharp-predictive-Conservation', 'sharp-predictive-IG-post',\
              )
     
-if True : #not os.path.isfile(file_name):
+if not os.path.isfile(file_name):
     for POL in liste_pol:
         dict_records[POL] = {}
 
