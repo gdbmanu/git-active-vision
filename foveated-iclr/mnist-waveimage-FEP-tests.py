@@ -59,8 +59,8 @@ from waveimage import calc_U
 # In[10]:
 
 
-DECODER = 'naive-test'
-#DECODER = 'base' 
+#DECODER = 'naive-test'
+DECODER = 'base' 
 if DECODER == 'base':
     mu, Sigma, rho = pickle.load(open("mnist-waveimage-train-mu-Sigma-rho.pkl", "rb"))
 elif DECODER == 'naive':
@@ -73,8 +73,8 @@ elif DECODER == 'naive-test':
 # In[11]:
 
 
-ENCODER = 'base'
-#ENCODER = 'backbone-CNN-parts' 
+#ENCODER = 'base'
+ENCODER = 'backbone-CNN-parts' 
 if ENCODER == 'backbone-CNN-parts':
     from backbone_CNN_parts_def import *
     sess = tf.InteractiveSession()
