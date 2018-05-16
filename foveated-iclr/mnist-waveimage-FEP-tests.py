@@ -69,7 +69,6 @@ elif DECODER == 'naive-test':
     mu, Sigma, rho = pickle.load(open("mnist-waveimage-train-mu-Sigma-rho.pkl", "rb"))
 #mu, Sigma, rho = pickle.load(open("mnist-waveimage-train-mu-Sigma-rho-noisy-alt.pkl", "rb"))
 
-
 # In[11]:
 
 
@@ -550,7 +549,7 @@ def predictive_search_CNN(sess, wave_tensor, z_ref, log_score, actions_set, mem_
 # In[34]:
 
 
-def FEP_predictive_search(log_score, actions_set, mem_h_u, FLAG_POL = 'smooth-predictive-Info-Gain'):
+def FEP_predictive_search(log_score, delta_log_score, actions_set, mem_h_u, FLAG_POL = 'smooth-predictive-Info-Gain'):
     # actions_set ne contient que les positions de niveau 5
     h_ref = 5
     batch_ref = len(actions_set)
@@ -596,7 +595,11 @@ def FEP_predictive_search(log_score, actions_set, mem_h_u, FLAG_POL = 'smooth-pr
                 elif FLAG_POL == 'smooth-predictive-IG-post':
                     delta_log_score_path = log_score_path[i_full] - log_score[0]
                     delta_q_post = np.exp(delta_log_score_path) / np.sum(np.exp(delta_log_score_path))
-                    FEP_post[i_full] = entropy(q_post) + entropy(q_post, delta_q_post )    
+                    FEP_post[i_full] = entropy(q_post) + entropy(q_post, delta_q_post )   
+                elif FLAG_POL == 'smooth-predictive-IG':
+                    delta_log_score_path = log_score_path[i_full] - log_score[0]
+                    delta_q_post = np.exp(delta_log_score_path) / np.sum(np.exp(delta_log_score_path))
+                    FEP_post[i_full] = delta_log_score[c] + entropy(q_post) + entropy(q_post, delta_q_post) - np.dot(delta_log_score,q_post) 
             else: # FLAG_POL == 'smooth-predictive-Info-Gain'
                 delta_log_score_path = log_score_path[i_full] - log_score[0]
                 delta_q_post = np.exp(delta_log_score_path) / np.sum(np.exp(delta_log_score_path))
@@ -625,7 +628,7 @@ def FEP_predictive_search(log_score, actions_set, mem_h_u, FLAG_POL = 'smooth-pr
 # In[35]:
 
 
-def FEP_predictive_search_CNN(sess, wave_tensor, log_score, actions_set, mem_h_u, FLAG_POL = 'smooth-predictive-Info-Gain'):
+def FEP_predictive_search_CNN(sess, wave_tensor, log_score, delta_log_score, actions_set, mem_h_u, FLAG_POL = 'smooth-predictive-Info-Gain'):
     # actions_set ne contient que les positions de niveau 5
     h_ref = 5
     batch_ref = len(actions_set)
@@ -678,6 +681,10 @@ def FEP_predictive_search_CNN(sess, wave_tensor, log_score, actions_set, mem_h_u
                     delta_log_score_path = log_score_path[i_full] - log_score[0]
                     delta_q_post = np.exp(delta_log_score_path) / np.sum(np.exp(delta_log_score_path))
                     FEP_post[i_full] = entropy(q_post) + entropy(q_post, delta_q_post )    
+                elif FLAG_POL == 'smooth-predictive-IG':
+                    delta_log_score_path = log_score_path[i_full] - log_score[0]
+                    delta_q_post = np.exp(delta_log_score_path) / np.sum(np.exp(delta_log_score_path))
+                    FEP_post[i_full] = delta_log_score[c] + entropy(q_post) + entropy(q_post, delta_q_post) - np.dot(delta_log_score,q_post) 
             else: # FLAG_POL == 'smooth-predictive-Info-Gain'
                 delta_log_score_path = log_score_path[i_full] - log_score[0]
                 delta_q_post = np.exp(delta_log_score_path) / np.sum(np.exp(delta_log_score_path))
@@ -730,9 +737,9 @@ def prediction_based_policy_CNN(sess, wave_tensor, log_score, actions_set, mem_h
 # In[38]:
 
 
-def FEP_prediction_based_policy(log_score, actions_set, mem_h_u, FLAG_POL = 'smooth-predictive-Info-Gain'):
+def FEP_prediction_based_policy(log_score, delta_log_score, actions_set, mem_h_u, FLAG_POL = 'smooth-predictive-Info-Gain'):
     
-    u_tilde = FEP_predictive_search(log_score, actions_set, mem_h_u, FLAG_POL)
+    u_tilde = FEP_predictive_search(log_score, delta_log_score, actions_set, mem_h_u, FLAG_POL)
     
     return u_tilde
 
@@ -740,9 +747,9 @@ def FEP_prediction_based_policy(log_score, actions_set, mem_h_u, FLAG_POL = 'smo
 # In[50]:
 
 
-def FEP_prediction_based_policy_CNN(sess, wave_tensor, log_score, actions_set, mem_h_u, FLAG_POL = 'smooth-predictive-Info-Gain'):
+def FEP_prediction_based_policy_CNN(sess, wave_tensor, log_score, delta_log_score, actions_set, mem_h_u, FLAG_POL = 'smooth-predictive-Info-Gain'):
     
-    u_tilde = FEP_predictive_search_CNN(sess, wave_tensor, log_score, actions_set, mem_h_u, FLAG_POL)
+    u_tilde = FEP_predictive_search_CNN(sess, wave_tensor, log_score, delta_log_score, actions_set, mem_h_u, FLAG_POL)
     
     return u_tilde
 
@@ -787,9 +794,9 @@ def random_policy(log_score, mem_h_u):
 # In[43]:
 
 
-def scene_exploration(sess, wave_tensor_ref, wave_tensor, log_score, z_ref, ind_test, actions_set, mem_h_u, record,                       POL = 'predictive', AFF = True, THRESHOLD = 1e-4, INIT = 'limit'):
+def scene_exploration(sess, wave_tensor_ref, wave_tensor, log_score, delta_log_score, z_ref, ind_test, actions_set, mem_h_u, record,                       POL = 'predictive', AFF = True, THRESHOLD = 1e-4, INIT = 'limit'):
     
-    assert POL == 'sharp-predictive-Info-Gain' or POL == 'sharp-predictive-Infomax'    or POL == 'sharp-predictive-Innovation' or POL == 'sharp-predictive-Conservation' or POL == 'sharp-predictive-IG-post'    or POL == 'saliency-based' or POL == 'random' or POL == 'full' or POL == 'generic-saliency-based'    or POL == 'smooth-predictive-Info-Gain' or POL == 'smooth-predictive-Infomax'    or POL == 'smooth-predictive-Innovation' or POL == 'smooth-predictive-Conservation' or POL == 'smooth-predictive-IG-post'
+    assert POL == 'sharp-predictive-Info-Gain' or POL == 'sharp-predictive-Infomax'    or POL == 'sharp-predictive-Innovation' or POL == 'sharp-predictive-Conservation' or POL == 'sharp-predictive-IG-post'    or POL == 'saliency-based' or POL == 'random' or POL == 'full' or POL == 'generic-saliency-based'    or POL == 'smooth-predictive-Info-Gain' or POL == 'smooth-predictive-Infomax'    or POL == 'smooth-predictive-Innovation' or POL == 'smooth-predictive-Conservation' or POL == 'smooth-predictive-IG-post' or POL == 'smooth-predictive-IG'
     
     if POL == 'full':
         THRESHOLD = 0
@@ -821,11 +828,11 @@ def scene_exploration(sess, wave_tensor_ref, wave_tensor, log_score, z_ref, ind_
                     u_tilde = prediction_based_policy_CNN(sess, wave_tensor, log_score, actions_set, mem_h_u, FLAG_POL = POL)
                 else:
                     u_tilde = prediction_based_policy(log_score, actions_set, mem_h_u, FLAG_POL = POL)
-            elif POL == 'smooth-predictive-Info-Gain' or POL == 'smooth-predictive-Infomax'              or POL == 'smooth-predictive-Innovation' or POL == 'smooth-predictive-Conservation' or POL == 'smooth-predictive-IG-post':
+            elif POL == 'smooth-predictive-Info-Gain' or POL == 'smooth-predictive-Infomax'              or POL == 'smooth-predictive-Innovation' or POL == 'smooth-predictive-Conservation' or POL == 'smooth-predictive-IG-post' or POL == 'smooth-predictive-IG':
                 if ENCODER == 'backbone-CNN-parts':
-                    u_tilde = FEP_prediction_based_policy_CNN(sess, wave_tensor, log_score, actions_set, mem_h_u, FLAG_POL = POL)
+                    u_tilde = FEP_prediction_based_policy_CNN(sess, wave_tensor, log_score, delta_log_score, actions_set, mem_h_u, FLAG_POL = POL)
                 else:
-                    u_tilde = FEP_prediction_based_policy(log_score, actions_set, mem_h_u, FLAG_POL = POL)    
+                    u_tilde = FEP_prediction_based_policy(log_score, delta_log_score, actions_set, mem_h_u, FLAG_POL = POL)    
             elif POL == 'saliency-based' :
                 u_tilde = saliency_based_policy(log_score, pi_predictive_sorted, mem_h_u)
             elif POL == 'generic-saliency-based':
@@ -839,6 +846,7 @@ def scene_exploration(sess, wave_tensor_ref, wave_tensor, log_score, z_ref, ind_
         #wave_tensor =  init_wave_tensor(1)
         liste_path = calcule_asc_path(h_ref, u_tilde)
         
+        mem_log_score = log_score[0]
         for (h_path, u_path) in reversed(liste_path):
             if (h_path, u_path) not in mem_h_u:
                 if ENCODER == 'backbone-CNN-parts':
@@ -854,6 +862,8 @@ def scene_exploration(sess, wave_tensor_ref, wave_tensor, log_score, z_ref, ind_
         
         if ENCODER == 'backbone-CNN-parts':
             log_score = y_hat_logit.eval(feed_dict={x_5: wave_tensor[5],                            x_4: wave_tensor[4],                            x_3: wave_tensor[3],                            x_2: wave_tensor[2],                            x_1: wave_tensor[1],                            x_0: wave_tensor[0],                            keep_prob: 1,                            batch_phase:False}) 
+            
+        delta_log_score = log_score[0] - mem_log_score
         
         pi = np.exp(log_score[0]) / np.sum(np.exp(log_score[0])) #sess.run(tf.nn.softmax(log_score))[0]
                 
@@ -935,7 +945,7 @@ import time
 dict_records = {}
 
 #file_name = "mnist-waveimage-CNN-backbone-records-rnd-parts-generic-saliency.npy"
-file_name = "mnist-waveimage-records-H0_init-" + ENCODER + '-' + DECODER + "-" + str(NB_TRIALS) + ".npy" #random.npy" #-naive-bayes.npy"
+file_name = "mnist-waveimage-records-H0_init-" + ENCODER + '-' + DECODER + "-" + str(NB_TRIALS) + "-IG-test.npy" #random.npy" #-naive-bayes.npy"
 #file_name = "mnist-waveimage-records-FEP-dual-full-naive-bayes.npy"
 #file_name = "tmp"
 
@@ -946,10 +956,11 @@ if DECODER == 'base':
 elif DECODER == 'naive' or DECODER == 'naive-test':
     lik_predictive = lik_predictive_naive
 
-liste_pol  = (            'smooth-predictive-Info-Gain', 'smooth-predictive-Infomax',             'smooth-predictive-Innovation', 'smooth-predictive-Conservation', 'smooth-predictive-IG-post',             'saliency-based', 'generic-saliency-based', 'random',             #'full', \
+'''liste_pol  = (            'smooth-predictive-Info-Gain', 'smooth-predictive-Infomax',             'smooth-predictive-Innovation', 'smooth-predictive-Conservation', 'smooth-predictive-IG-post',             'saliency-based', 'generic-saliency-based', 'random',             #'full', \
             'sharp-predictive-Info-Gain', 'sharp-predictive-Infomax', \
             'sharp-predictive-Innovation', 'sharp-predictive-Conservation', 'sharp-predictive-IG-post',\
-             )
+             )'''
+liste_pol = ('smooth-predictive-IG',)
     
 if not os.path.isfile(file_name):
     for POL in liste_pol:
@@ -976,6 +987,7 @@ if not os.path.isfile(file_name):
                           # 
                 # initial
                 log_score = np.zeros((1,10))
+                delta_log_score = np.zeros(10)
                 pi = np.ones(10) / 10
                 H = entropy(pi) #np.sum(- pi * np.log(pi))
 
@@ -1001,7 +1013,7 @@ if not os.path.isfile(file_name):
                 else:
                     AFF = False
 
-                z_final = scene_exploration(sess, wave_tensor_ref, wave_tensor, log_score, z_ref, ind_test,                                            actions_set, mem_h_u, record,                                             POL = POL, AFF = AFF, INIT = INIT, THRESHOLD = THRESHOLD)
+                z_final = scene_exploration(sess, wave_tensor_ref, wave_tensor, log_score, delta_log_score, z_ref, ind_test,                                            actions_set, mem_h_u, record,                                             POL = POL, AFF = AFF, INIT = INIT, THRESHOLD = THRESHOLD)
                 record.z_final = z_final
                 record.success = z_ref == z_final
 
