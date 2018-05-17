@@ -600,6 +600,7 @@ def FEP_predictive_search(log_score, delta_log_score, actions_set, mem_h_u, FLAG
                     delta_log_score_path = log_score_path[i_full] - log_score[0]
                     delta_q_post = np.exp(delta_log_score_path) / np.sum(np.exp(delta_log_score_path))
                     FEP_post[i_full] = delta_log_score[c] + entropy(q_post) + entropy(q_post, delta_q_post) - np.dot(delta_log_score,q_post) 
+                    #print delta_log_score[c]  - np.dot(delta_log_score,q_post) 
             else: # FLAG_POL == 'smooth-predictive-Info-Gain'
                 delta_log_score_path = log_score_path[i_full] - log_score[0]
                 delta_q_post = np.exp(delta_log_score_path) / np.sum(np.exp(delta_log_score_path))
@@ -846,7 +847,7 @@ def scene_exploration(sess, wave_tensor_ref, wave_tensor, log_score, delta_log_s
         #wave_tensor =  init_wave_tensor(1)
         liste_path = calcule_asc_path(h_ref, u_tilde)
         
-        mem_log_score = log_score[0]
+        mem_log_score = np.copy(log_score[0])
         for (h_path, u_path) in reversed(liste_path):
             if (h_path, u_path) not in mem_h_u:
                 if ENCODER == 'backbone-CNN-parts':
@@ -864,6 +865,7 @@ def scene_exploration(sess, wave_tensor_ref, wave_tensor, log_score, delta_log_s
             log_score = y_hat_logit.eval(feed_dict={x_5: wave_tensor[5],                            x_4: wave_tensor[4],                            x_3: wave_tensor[3],                            x_2: wave_tensor[2],                            x_1: wave_tensor[1],                            x_0: wave_tensor[0],                            keep_prob: 1,                            batch_phase:False}) 
             
         delta_log_score = log_score[0] - mem_log_score
+        #print delta_log_score
         
         pi = np.exp(log_score[0]) / np.sum(np.exp(log_score[0])) #sess.run(tf.nn.softmax(log_score))[0]
                 
@@ -912,7 +914,7 @@ from record import Record, affiche_records
 # In[45]:
 
 
-NB_TRIALS = 10000
+NB_TRIALS = 1000
 
 
 # In[46]:
@@ -945,9 +947,13 @@ import time
 dict_records = {}
 
 #file_name = "mnist-waveimage-CNN-backbone-records-rnd-parts-generic-saliency.npy"
-file_name = "mnist-waveimage-records-H0_init-" + ENCODER + '-' + DECODER + "-" + str(NB_TRIALS) + "-IG-test.npy" #random.npy" #-naive-bayes.npy"
+
+file_name = "mnist-waveimage-records-H0_init-" + ENCODER + '-' + DECODER + "-" + str(NB_TRIALS) + "-IG-test.npy" #random.npy" 
+
+#-naive-bayes.npy"
 #file_name = "mnist-waveimage-records-FEP-dual-full-naive-bayes.npy"
-#file_name = "tmp"
+
+file_name = "tmp"
 
 INIT = 'H0-init' #
 
