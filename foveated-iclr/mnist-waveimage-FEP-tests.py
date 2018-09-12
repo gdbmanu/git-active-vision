@@ -59,8 +59,8 @@ from waveimage import calc_U
 # In[10]:
 
 
-DECODER = 'naive-test'
-#DECODER = 'base' 
+#DECODER = 'naive-test'
+DECODER = 'base' 
 if DECODER == 'base':
     mu, Sigma, rho = pickle.load(open("mnist-waveimage-train-mu-Sigma-rho.pkl", "rb"))
 elif DECODER == 'naive':
@@ -72,8 +72,8 @@ elif DECODER == 'naive-test':
 # In[11]:
 
 
-ENCODER = 'base'
-#ENCODER = 'backbone-CNN-parts' 
+#ENCODER = 'base'
+ENCODER = 'backbone-CNN-parts' 
 if ENCODER == 'backbone-CNN-parts':
     from backbone_CNN_parts_def import *
     sess = tf.InteractiveSession()
@@ -948,12 +948,12 @@ dict_records = {}
 
 #file_name = "mnist-waveimage-CNN-backbone-records-rnd-parts-generic-saliency.npy"
 
-file_name = "mnist-waveimage-records-H0_init-" + ENCODER + '-' + DECODER + "-" + str(NB_TRIALS) + "-IG-test.npy" #random.npy" 
+file_name = "mnist-waveimage-records-H0_init-" + ENCODER + '-' + DECODER + "-" + str(NB_TRIALS) + "-IG-test2.npy" #random.npy" 
 
 #-naive-bayes.npy"
 #file_name = "mnist-waveimage-records-FEP-dual-full-naive-bayes.npy"
 
-file_name = "tmp"
+#file_name = "tmp"
 
 INIT = 'H0-init' #
 
